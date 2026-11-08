@@ -406,6 +406,7 @@ enum ExtensionFn<T> {
 struct DeviceExtensionFunctions {
     debug_utils: Option<ext::debug_utils::Device>,
     draw_indirect_count: Option<khr::draw_indirect_count::Device>,
+    maintenance1: ExtensionFn<khr::maintenance1::Device>,
     timeline_semaphore: Option<ExtensionFn<khr::timeline_semaphore::Device>>,
     ray_tracing: Option<RayTracingDeviceExtensionFunctions>,
     ray_tracing_pipelines: Option<khr::ray_tracing_pipeline::Device>,

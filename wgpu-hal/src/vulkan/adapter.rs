@@ -2701,6 +2701,15 @@ impl super::Adapter {
         } else {
             None
         };
+        // `VK_KHR_maintenance1` is required below Vulkan 1.1.
+        let maintenance1_fn = if enabled_extensions.contains(&khr::maintenance1::NAME) {
+            super::ExtensionFn::Extension(khr::maintenance1::Device::new(
+                &self.instance.raw,
+                &raw_device,
+            ))
+        } else {
+            super::ExtensionFn::Promoted
+        };
         let timeline_semaphore_fn = if enabled_extensions.contains(&khr::timeline_semaphore::NAME) {
             Some(super::ExtensionFn::Extension(
                 khr::timeline_semaphore::Device::new(&self.instance.raw, &raw_device),
@@ -3011,6 +3020,7 @@ impl super::Adapter {
             extension_fns: super::DeviceExtensionFunctions {
                 debug_utils: debug_utils_fn,
                 draw_indirect_count: indirect_count_fn,
+                maintenance1: maintenance1_fn,
                 timeline_semaphore: timeline_semaphore_fn,
                 ray_tracing: ray_tracing_fns,
                 ray_tracing_pipelines: ray_tracing_pipeline_fns,

@@ -197,6 +197,20 @@ impl crate::CommandEncoder for super::CommandEncoder {
                 .raw
                 .reset_command_pool(self.raw, vk::CommandPoolResetFlags::default())
         };
+        // myshell: and hand the pool's spare memory back to the driver. A
+        // reset keeps it for the pool's next use: honeykrisp (Asahi) keeps up
+        // to 64 command BOs of 128 KiB per pool, ignoring
+        // RELEASE_RESOURCES, and wgpu keeps a pool per encoder it reuses, so
+        // an idle bar held 15-35 MB of them. Trimmed, they go to the
+        // driver's BO cache, which reuses them for the next frame's commands
+        // and frees what has sat unused for two seconds.
+        unsafe {
+            (self.device.raw.fp_v1_1().trim_command_pool)(
+                self.device.raw.handle(),
+                self.raw,
+                vk::CommandPoolTrimFlags::empty(),
+            )
+        };
     }
 
     unsafe fn transition_buffers<'a, T>(&mut self, barriers: T)

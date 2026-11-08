@@ -197,6 +197,17 @@ impl crate::CommandEncoder for super::CommandEncoder {
                 .raw
                 .reset_command_pool(self.raw, vk::CommandPoolResetFlags::default())
         };
+        // A reset pool keeps its memory for reuse; give the unused part back
+        // to the driver, or every recycled encoder holds on to it.
+        let flags = vk::CommandPoolTrimFlags::empty();
+        match self.device.extension_fns.maintenance1 {
+            super::ExtensionFn::Extension(ref ext) => unsafe {
+                ext.trim_command_pool(self.raw, flags)
+            },
+            super::ExtensionFn::Promoted => unsafe {
+                self.device.raw.trim_command_pool(self.raw, flags)
+            },
+        }
     }
 
     unsafe fn transition_buffers<'a, T>(&mut self, barriers: T)
